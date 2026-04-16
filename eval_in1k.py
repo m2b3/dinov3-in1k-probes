@@ -67,6 +67,7 @@ def main() -> None:
     parser.add_argument("--max-batches", type=int, default=None,
                         help="Limit batches (for quick testing)")
     parser.add_argument("--device", default="cuda")
+    parser.add_argument("--compile", action="store_true", help="torch.compile the backbone")
     args = parser.parse_args()
 
     assert args.imagenet_val.is_dir(), f"Not a directory: {args.imagenet_val}"
@@ -95,18 +96,21 @@ def main() -> None:
     for p in backbone.parameters():
         p.requires_grad_(False)
     backbone.to(device)
+    hidden_size = int(backbone.config.hidden_size)
     log.info("Backbone loaded in %.1fs (hidden_size=%d, patch_size=%d, registers=%d)",
-             time.perf_counter() - t_load, backbone.config.hidden_size,
+             time.perf_counter() - t_load, hidden_size,
              backbone.config.patch_size, backbone.config.num_register_tokens)
+    if args.compile:
+        log.info("Compiling backbone...")
+        backbone.compile()
 
     # --- Load probe ---
     t_load = time.perf_counter()
     probe = DINOv3LinearClassificationHead.from_pretrained(probe_repo)
     probe.eval()
     probe.to(device)
-    assert probe.in_features == backbone.config.hidden_size, (
-        f"Dimension mismatch: probe.in_features={probe.in_features} != "
-        f"backbone.hidden_size={backbone.config.hidden_size}"
+    assert probe.in_features == hidden_size, (
+        f"Dimension mismatch: probe.in_features={probe.in_features} != backbone.hidden_size={hidden_size}"
     )
     assert probe.out_features == NUM_CLASSES
     log.info("Probe loaded in %.1fs (in=%d, out=%d)",
