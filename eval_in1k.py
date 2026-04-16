@@ -9,20 +9,21 @@
 # ///
 """Standalone IN1K evaluation for DINOv3 linear probes.
 
-Loads a DINOv3 backbone + linear probe from HuggingFace Hub,
+Loads DINOv3 backbone + linear probe from HuggingFace Hub,
 runs IN1K validation with correct preprocessing,
-and reports standard top-1, top-5, and ImageNet-ReAL top-1.
+reports standard top-1, top-5, and ImageNet-ReAL top-1.
 
-The image size and backbone repo are read from the probe's config metadata
-on HuggingFace — no hardcoding needed.
+Image size and backbone are derived from the probe's HF config metadata.
 
 Usage:
-    uv run eval_in1k.py --imagenet-val /path/to/ILSVRC2012/val
-    uv run eval_in1k.py --imagenet-val /path/to/val --probe yberreby/dinov3-vitb16-lvd1689m-in1k-512x512-linear-clf-probe
+    uv run eval_in1k.py --imagenet-val /path/to/val
+    uv run eval_in1k.py --imagenet-val /path/to/val --variant vitb16
+    uv run eval_in1k.py --imagenet-val /path/to/val --probe some-org/custom-probe
 """
 
 import argparse
 import json
+import logging
 import time
 from itertools import islice
 from pathlib import Path
@@ -33,25 +34,15 @@ from torchvision import datasets, transforms
 from tqdm import tqdm
 from transformers import AutoModel
 
-from dinov3_in1k_probes import DINOv3LinearClassificationHead
+from dinov3_in1k_probes import DINOv3LinearClassificationHead, VARIANTS, probe_repo as make_probe_repo
 from dinov3_in1k_probes.data import NUM_CLASSES, load_real_labels, real_accuracy
+from dinov3_in1k_probes.repos import dinov3_repo_from_model_name
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+log = logging.getLogger(__name__)
 
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_STD = (0.229, 0.224, 0.225)
-
-DEFAULT_PROBE = "yberreby/dinov3-vits16plus-lvd1689m-in1k-512x512-linear-clf-probe"
-
-
-def load_probe_config(probe_repo: str) -> dict:
-    path = hf_hub_download(probe_repo, "config.json")
-    with open(path) as f:
-        return json.load(f)
-
-
-def dinov3_repo_from_model_name(model_name: str) -> str:
-    """'dinov3_vits16plus' → 'facebook/dinov3-vits16plus-pretrain-lvd1689m'."""
-    slug = model_name.replace("_", "-")
-    return f"facebook/{slug}-pretrain-lvd1689m"
 
 
 def make_val_transform(image_size: int) -> transforms.Compose:
@@ -68,8 +59,10 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Evaluate DINOv3 IN1K linear probes")
     parser.add_argument("--imagenet-val", type=Path, required=True,
                         help="Path to IN1K val/ directory (class subdirectories)")
-    parser.add_argument("--probe", default=DEFAULT_PROBE,
-                        help="HF repo ID for the linear probe")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("--variant", default="vits16plus", choices=VARIANTS,
+                       help="Shorthand for published probes (default: vits16plus)")
+    group.add_argument("--probe", help="Full HF repo ID for a custom probe")
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--max-batches", type=int, default=None,
                         help="Limit batches (for quick testing)")
@@ -79,48 +72,55 @@ def main() -> None:
     assert args.imagenet_val.is_dir(), f"Not a directory: {args.imagenet_val}"
     device = torch.device(args.device)
 
-    # --- Derive config from probe metadata ---
-    print(f"Probe: {args.probe}")
-    probe_cfg = load_probe_config(args.probe)
-    meta = probe_cfg["config_metadata"]
-    image_size = meta["image_size"]
-    model_name = meta["model_name"]
-    dinov3_repo = dinov3_repo_from_model_name(model_name)
-    print(f"DINOv3: {dinov3_repo} (from probe metadata)")
-    print(f"Image size: {image_size}x{image_size} (from probe metadata)")
-    print(f"Device: {device}")
+    # --- Resolve probe repo and read its config ---
+    probe_repo = args.probe or make_probe_repo(args.variant)
+    log.info("Probe repo: %s", probe_repo)
 
-    # --- Load models ---
-    print("Loading DINOv3 backbone...", end=" ", flush=True)
-    backbone = AutoModel.from_pretrained(dinov3_repo, torch_dtype=torch.float32)
+    cfg_path = hf_hub_download(probe_repo, "config.json")
+    with open(cfg_path) as f:
+        probe_cfg = json.load(f)
+
+    meta = probe_cfg["config_metadata"]
+    image_size: int = meta["image_size"]
+    backbone_repo = dinov3_repo_from_model_name(meta["model_name"])
+    log.info("Backbone: %s (from probe metadata)", backbone_repo)
+    log.info("Image size: %dx%d (from probe metadata)", image_size, image_size)
+    log.info("Device: %s", device)
+
+    # --- Load backbone ---
+    t_load = time.perf_counter()
+    log.info("Loading DINOv3 backbone...")
+    backbone = AutoModel.from_pretrained(backbone_repo, torch_dtype=torch.float32)
     backbone.eval()
     for p in backbone.parameters():
         p.requires_grad_(False)
     backbone.to(device)
-    print(f"done (hidden_size={backbone.config.hidden_size})")
+    log.info("Backbone loaded in %.1fs (hidden_size=%d, patch_size=%d, registers=%d)",
+             time.perf_counter() - t_load, backbone.config.hidden_size,
+             backbone.config.patch_size, backbone.config.num_register_tokens)
 
-    print("Loading probe...", end=" ", flush=True)
-    probe = DINOv3LinearClassificationHead.from_pretrained(args.probe)
+    # --- Load probe ---
+    t_load = time.perf_counter()
+    probe = DINOv3LinearClassificationHead.from_pretrained(probe_repo)
     probe.eval()
     probe.to(device)
-    print(f"done (in={probe.in_features}, out={probe.out_features})")
     assert probe.in_features == backbone.config.hidden_size, (
-        f"Probe in_features ({probe.in_features}) != backbone hidden_size ({backbone.config.hidden_size})"
+        f"Dimension mismatch: probe.in_features={probe.in_features} != "
+        f"backbone.hidden_size={backbone.config.hidden_size}"
     )
     assert probe.out_features == NUM_CLASSES
+    log.info("Probe loaded in %.1fs (in=%d, out=%d)",
+             time.perf_counter() - t_load, probe.in_features, probe.out_features)
 
     # --- Dataset ---
-    transform = make_val_transform(image_size)
-    dataset = datasets.ImageFolder(str(args.imagenet_val), transform=transform)
-    print(f"Dataset: {len(dataset)} images, {len(dataset.classes)} classes")
+    t_load = time.perf_counter()
+    dataset = datasets.ImageFolder(str(args.imagenet_val), transform=make_val_transform(image_size))
     assert len(dataset.classes) == NUM_CLASSES, f"Expected {NUM_CLASSES} classes, got {len(dataset.classes)}"
+    log.info("Dataset: %d images, %d classes (%.1fs)",
+             len(dataset), len(dataset.classes), time.perf_counter() - t_load)
 
     loader = torch.utils.data.DataLoader(
-        dataset,
-        batch_size=args.batch_size,
-        shuffle=False,
-        num_workers=8,
-        pin_memory=True,
+        dataset, batch_size=args.batch_size, shuffle=False, num_workers=8, pin_memory=True,
     )
 
     # Relative filenames for ReAL lookup
@@ -134,35 +134,42 @@ def main() -> None:
     correct_top5 = 0
     total = 0
 
+    n_batches = args.max_batches or len(loader)
     batches = enumerate(loader)
     if args.max_batches is not None:
         batches = islice(batches, args.max_batches)
 
     t0 = time.perf_counter()
     with torch.inference_mode():
-        for batch_idx, (images, labels) in tqdm(batches, total=args.max_batches or len(loader), desc="Evaluating"):
+        for batch_idx, (images, labels) in tqdm(batches, total=n_batches, desc="Evaluating"):
+            t_batch = time.perf_counter()
             images = images.to(device, non_blocking=True)
 
-            # CLS extraction with bf16 autocast (matches training extraction)
             with torch.autocast(device_type=device.type, dtype=torch.bfloat16):
                 cls_tokens = backbone(images).last_hidden_state[:, 0]
             cls_tokens = cls_tokens.float()
 
             logits = probe(cls_tokens)
             preds = logits.argmax(dim=-1).cpu()
-            top5 = logits.topk(5, dim=-1).indices.cpu()
+            top5_preds = logits.topk(5, dim=-1).indices.cpu()
 
             all_preds.append(preds)
             correct_top1 += (preds == labels).sum().item()
-            correct_top5 += sum(labels[i] in top5[i] for i in range(len(labels)))
+            correct_top5 += (top5_preds == labels.unsqueeze(1)).any(dim=1).sum().item()
             total += len(labels)
 
+            batch_time = time.perf_counter() - t_batch
             if batch_idx == 0:
-                elapsed_first = time.perf_counter() - t0
-                img_per_sec = len(labels) / elapsed_first
-                print(f"\nFirst batch: {elapsed_first:.1f}s ({img_per_sec:.0f} img/s)")
-                est_total = len(dataset) / img_per_sec
-                print(f"Estimated total: {est_total:.0f}s ({est_total / 60:.1f} min)")
+                log.info("First batch: %.1fs (%.0f img/s), estimated total: %.0fs (%.1f min)",
+                         batch_time, len(labels) / batch_time,
+                         len(dataset) / (len(labels) / batch_time),
+                         len(dataset) / (len(labels) / batch_time) / 60)
+            elif batch_idx == 2:
+                # Steady-state estimate (after warmup)
+                elapsed = time.perf_counter() - t0
+                img_per_sec = total / elapsed
+                remaining = (len(dataset) - total) / img_per_sec
+                log.info("Steady-state: %.0f img/s, ~%.0fs remaining", img_per_sec, remaining)
 
     elapsed = time.perf_counter() - t0
     all_preds_np = torch.cat(all_preds).numpy()
@@ -175,7 +182,7 @@ def main() -> None:
     published = probe_cfg.get("val_results", {})
 
     print(f"\n{'=' * 60}")
-    print(f"Probe:   {args.probe}")
+    print(f"Probe:   {probe_repo}")
     print(f"Images:  {total}")
     print(f"Time:    {elapsed:.1f}s ({total / elapsed:.0f} img/s)")
     print(f"{'=' * 60}")

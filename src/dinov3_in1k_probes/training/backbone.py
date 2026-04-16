@@ -6,7 +6,12 @@ import torch
 from torch import Tensor
 from transformers import AutoModel, PreTrainedModel
 
+from dinov3_in1k_probes.repos import model_name_from_repo
+
 log = logging.getLogger(__name__)
+
+# Re-export for backward compatibility with existing training code imports.
+__all__ = ["load_dinov3", "extract_cls", "model_name_from_repo"]
 
 
 def load_dinov3(repo_id: str, *, device: torch.device) -> PreTrainedModel:
@@ -28,12 +33,3 @@ def extract_cls(model: PreTrainedModel, images: Tensor) -> Tensor:
     with torch.no_grad(), torch.autocast(device_type=images.device.type, dtype=torch.bfloat16):
         out = model(images).last_hidden_state
     return out[:, 0].float()
-
-
-def model_name_from_repo(repo: str) -> str:
-    """'facebook/dinov3-vitb16-pretrain-lvd1689m' → 'dinov3_vitb16'."""
-    slug = repo.split("/")[-1]
-    assert "-pretrain" in slug, f"Expected '-pretrain' in repo slug: {repo}"
-    name = "_".join(slug.split("-pretrain")[0].split("-"))
-    assert name.startswith("dinov3_"), f"Parsed name {name!r} doesn't look like a DINOv3 model (from {repo})"
-    return name
