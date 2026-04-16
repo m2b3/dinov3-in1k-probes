@@ -155,7 +155,7 @@ def _save_checkpoint(
         "trial_params": trial_params,
         "config_metadata": {
             "model_name": model_name, "image_size": cfg.image_size,
-            "outer_epochs": cfg.outer_epochs,
+            "outer_epochs": cfg.outer_epochs, "objective": cfg.objective,
         },
         "timestamp": datetime.now().isoformat(),
         "comet_experiment_key": comet_key,

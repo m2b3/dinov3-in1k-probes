@@ -49,8 +49,14 @@ for variant, cfg in configs.items():
     ])
 
 print("\n\n=== Hyperparameters (Optuna best trial) ===\n")
-print("Loss: sigmoid (binary CE per class, Beyer et al. 2020) — not stored in checkpoint,")
-print("but all published probes used the same TrainConfig default.\n")
+objectives = {v: cfg["config_metadata"].get("objective", "sigmoid") for v, cfg in configs.items()}
+unique_objectives = set(objectives.values())
+if len(unique_objectives) == 1:
+    print(f"Loss: {unique_objectives.pop()} for all probes.\n")
+else:
+    for v, obj in objectives.items():
+        print(f"  {v}: {obj}")
+    print()
 print(tabulate(hp_rows, headers=[
     "Variant", "optim", "peak_lr", "wd", "bs", "steps", "warmup",
     "β1", "β2", "dv3_init", "epochs", "outer_ep",
