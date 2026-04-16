@@ -90,7 +90,7 @@ def main() -> None:
     # --- Load backbone ---
     t_load = time.perf_counter()
     log.info("Loading DINOv3 backbone...")
-    backbone = AutoModel.from_pretrained(backbone_repo, torch_dtype=torch.float32)
+    backbone = AutoModel.from_pretrained(backbone_repo, dtype=torch.float32)
     backbone.eval()
     for p in backbone.parameters():
         p.requires_grad_(False)
