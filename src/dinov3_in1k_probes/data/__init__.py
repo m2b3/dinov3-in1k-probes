@@ -1,4 +1,4 @@
-"""ImageNet-1K constants, class labels, and ImageNet-ReAL evaluation."""
+"""ImageNet-1K constants, class labels, preprocessing, and ImageNet-ReAL evaluation."""
 
 import json
 import re
@@ -6,8 +6,21 @@ from pathlib import Path
 
 import numpy as np
 from numpy.typing import NDArray
+from torchvision import transforms
 
 NUM_CLASSES = 1000
+IMAGENET_MEAN = (0.485, 0.456, 0.406)
+IMAGENET_STD = (0.229, 0.224, 0.225)
+
+
+def make_val_transform(image_size: int) -> transforms.Compose:
+    """Resize shortest side → center crop → normalize. Matches DALI val pipeline."""
+    return transforms.Compose([
+        transforms.Resize(image_size, interpolation=transforms.InterpolationMode.BICUBIC),
+        transforms.CenterCrop(image_size),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
+    ])
 
 _DATA_DIR = Path(__file__).resolve().parent / "in1k"
 _REAL_LABELS_PATH = _DATA_DIR / "real.json"
