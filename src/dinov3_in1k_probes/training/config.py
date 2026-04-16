@@ -60,4 +60,4 @@ class TrainConfig:
     checkpoint_dir: Path = field(default_factory=lambda: _env_path("CHECKPOINTS_DIR", "checkpoints"))
 
     comet_project: str = "dv3-in1k-linear-probing"
-    comet_workspace: str = "m2b3-ava"
+    comet_workspace: str = field(default_factory=lambda: os.environ.get("COMET_WORKSPACE", ""))

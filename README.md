@@ -83,13 +83,54 @@ uvx --with 'git+https://github.com/yberreby/dinov3-in1k-probes.git' ipython
 ```
 
 
-## Development
+## Training
 
-To push to HuggingFace Hub, use the `push_to_hub.py` script.
-It will auto-detect the model name, image size, and other metadata.
+The training code is included in this repo under `src/dinov3_in1k_probes/training/`.
+Install the training dependencies with `uv sync --group training`.
 
-Example usage:
+### Two-phase pipeline
+
+1. **Extract** CLS tokens from a frozen DINOv3 backbone into `.pt` files on disk (GPU, DALI).
+2. **Train** a linear probe via Optuna HP search over the cached features (all in GPU memory, fast).
+
+This decouples the expensive backbone forward pass from the probe optimization,
+making 100+ Optuna trials practical over the full ImageNet training set.
+
+### Environment variables
+
+| Variable | Required by | Description |
+|----------|-------------|-------------|
+| `IMAGENET_ROOT` | `extract` | Path to `ILSVRC2012/` (must contain `train/` and `val/` subdirs) |
+| `FEATURES_DIR` | `extract`, `train` | Where to read/write cached `.pt` feature files |
+| `CHECKPOINTS_DIR` | `train` | Where to save probe checkpoints (default: `checkpoints`) |
+| `COMET_API_KEY` | `train` | Comet ML experiment tracking |
+| `COMET_WORKSPACE` | `train` | Comet workspace name (pass via CLI `--comet-workspace` or env var) |
+
+### Running locally
 
 ```bash
-uv run push_to_hub.py --checkpoint dinov3-vitb16-lvd1689m-in1k-512x512-linear-clf-probe.pt
+# Phase 1: extract CLS tokens
+uv run --group training python -m dinov3_in1k_probes.training extract --split val
+uv run --group training python -m dinov3_in1k_probes.training extract --split train  # run N times for N augmentation epochs
+
+# Phase 2: Optuna HP search
+uv run --group training python -m dinov3_in1k_probes.training train
+```
+
+### Running on SLURM
+
+```bash
+sbatch --account=YOUR_ALLOCATION slurm/extract.sbatch                        # val
+sbatch --account=YOUR_ALLOCATION --array=1-2 slurm/extract.sbatch --split train  # 2 train epochs
+sbatch --account=YOUR_ALLOCATION slurm/train.sbatch
+```
+
+Use `--help` on either subcommand for all options (model repo, image size, batch size, etc.).
+
+## Development
+
+Push probes to HuggingFace Hub:
+
+```bash
+uv run push_to_hub.py --checkpoint dinov3-vitb16-lvd1689m-in1k-512x512-linear-clf-probe.pt --owner YOUR_HF_USERNAME
 ```

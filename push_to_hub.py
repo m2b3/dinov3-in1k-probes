@@ -16,6 +16,7 @@ class Args:
     """Push DINOv3 linear probe to HuggingFace Hub."""
 
     checkpoint: Path
+    owner: str = "yberreby"
 
 
 def main() -> None:
@@ -23,14 +24,12 @@ def main() -> None:
 
     print(f"\nCheckpoint: {args.checkpoint}")
 
-    # Load checkpoint
     print("Loading checkpoint...")
     ckpt = torch.load(args.checkpoint, map_location="cpu", weights_only=False)
 
-    # Extract metadata from checkpoint
     metadata = ckpt["config_metadata"]
-    model_name = metadata["model_name"]  # e.g., "dinov3_vitb16"
-    slug = model_name.replace("dinov3_", "")  # e.g., "vitb16"
+    model_name = metadata["model_name"]
+    slug = model_name.replace("dinov3_", "")
     res = metadata["image_size"]
     val_results = ckpt["val_results"]
 
@@ -40,7 +39,6 @@ def main() -> None:
     print(f"IN1k val top-1: {val_results['top1'] * 100:.2f}%")
     print(f"IN1k-ReAL top-1: {val_results['real_top1'] * 100:.2f}%")
 
-    # Sanity check: if filename matches pattern, verify it matches checkpoint metadata
     if match := re.match(FILENAME_PATTERN, args.checkpoint.name):
         filename_slug = match.group("slug")
         filename_res = int(match.group("res"))
@@ -52,14 +50,12 @@ def main() -> None:
             )
         print("✓ Filename matches checkpoint metadata")
 
-    # Extract dimensions and create model
     out_features, in_features = ckpt["model_state_dict"]["weight"].shape
     print(f"Dimensions: in_features={in_features}, out_features={out_features}")
 
     probe = DINOv3LinearClassificationHead(in_features, out_features)
     probe.load_state_dict(ckpt["model_state_dict"])
 
-    # Build config
     config = {
         "in_features": in_features,
         "out_features": out_features,
@@ -69,8 +65,7 @@ def main() -> None:
     print("\nFull config:")
     pprint(config)
 
-    # Push to hub
-    repo_id = f"yberreby/dinov3-{slug}-lvd1689m-in1k-{res}x{res}-linear-clf-probe"
+    repo_id = f"{args.owner}/dinov3-{slug}-lvd1689m-in1k-{res}x{res}-linear-clf-probe"
     print(f"\nPushing to {repo_id}...")
     probe.push_to_hub(repo_id, config=config)
     print(f"✓ Successfully pushed to {repo_id}")
