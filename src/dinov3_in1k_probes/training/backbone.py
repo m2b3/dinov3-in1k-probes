@@ -8,9 +8,6 @@ from transformers import AutoModel, PreTrainedModel
 
 log = logging.getLogger(__name__)
 
-# 1 CLS + 4 register tokens before patch tokens.
-N_PREFIX_TOKENS = 5
-
 
 def load_dinov3(repo_id: str, *, device: torch.device) -> PreTrainedModel:
     """Load a frozen DINOv3 backbone from HuggingFace Hub."""
