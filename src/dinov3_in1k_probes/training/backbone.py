@@ -6,12 +6,7 @@ import torch
 from torch import Tensor
 from transformers import AutoModel, PreTrainedModel
 
-from dinov3_in1k_probes.repos import model_name_from_repo
-
 log = logging.getLogger(__name__)
-
-# Re-export for backward compatibility with existing training code imports.
-__all__ = ["load_dinov3", "extract_cls", "model_name_from_repo"]
 
 
 def load_dinov3(repo_id: str, *, device: torch.device) -> PreTrainedModel:

@@ -25,7 +25,7 @@ from dinov3_in1k_probes.data import (
     load_real_labels,
     real_accuracy,
 )
-from dinov3_in1k_probes.training.backbone import model_name_from_repo
+from dinov3_in1k_probes.repos import model_name_from_repo
 from dinov3_in1k_probes.training.config import TrainConfig
 from dinov3_in1k_probes.training.eval import evaluate
 from dinov3_in1k_probes.training.extract import CLS_SUFFIX, FILENAMES_SUFFIX, LABELS_SUFFIX

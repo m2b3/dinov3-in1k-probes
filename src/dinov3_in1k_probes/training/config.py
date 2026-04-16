@@ -23,11 +23,14 @@ DINOV3_REPOS: dict[str, str] = {
 } | {"vit7b16": "facebook/dinov3-vit7b16-pretrain-lvd1689m"}
 
 
+_DEFAULT_BACKBONE = dinov3_backbone_repo("vitb16")
+
+
 @dataclass
 class ExtractionConfig:
     """CLS token extraction from a frozen DINOv3 backbone."""
 
-    model_repo: str = "facebook/dinov3-vitb16-pretrain-lvd1689m"
+    model_repo: str = _DEFAULT_BACKBONE
     image_size: int = 512
     split: Literal["train", "val"] = "val"
 
@@ -45,7 +48,7 @@ class ExtractionConfig:
 class TrainConfig:
     """Optuna-based linear probe training on pre-extracted CLS tokens."""
 
-    model_repo: str = "facebook/dinov3-vitb16-pretrain-lvd1689m"
+    model_repo: str = _DEFAULT_BACKBONE
     image_size: int = 512
 
     max_batch_size: int = 2048

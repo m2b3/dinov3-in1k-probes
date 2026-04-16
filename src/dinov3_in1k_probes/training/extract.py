@@ -24,7 +24,8 @@ import torch
 from torch import Tensor
 from tqdm import tqdm
 
-from dinov3_in1k_probes.training.backbone import extract_cls, load_dinov3, model_name_from_repo
+from dinov3_in1k_probes.repos import model_name_from_repo
+from dinov3_in1k_probes.training.backbone import extract_cls, load_dinov3
 from dinov3_in1k_probes.training.config import ExtractionConfig
 from dinov3_in1k_probes.training.dali_loader import create_loader
 
