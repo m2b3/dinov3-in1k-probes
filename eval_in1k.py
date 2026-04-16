@@ -34,7 +34,7 @@ from torchvision import datasets, transforms
 from tqdm import tqdm
 from transformers import AutoModel
 
-from dinov3_in1k_probes import DINOv3LinearClassificationHead, VARIANTS, probe_repo as make_probe_repo
+from dinov3_in1k_probes import DINOv3LinearClassificationHead, VARIANTS, probe_repo
 from dinov3_in1k_probes.data import NUM_CLASSES, load_real_labels, real_accuracy
 from dinov3_in1k_probes.repos import dinov3_repo_from_model_name
 
@@ -74,10 +74,10 @@ def main() -> None:
     device = torch.device(args.device)
 
     # --- Resolve probe repo and read its config ---
-    probe_repo = args.probe or make_probe_repo(args.variant)
-    log.info("Probe repo: %s", probe_repo)
+    probe_repo_id = args.probe or probe_repo(args.variant)
+    log.info("Probe repo: %s", probe_repo_id)
 
-    cfg_path = hf_hub_download(probe_repo, "config.json")
+    cfg_path = hf_hub_download(probe_repo_id, "config.json")
     with open(cfg_path) as f:
         probe_cfg = json.load(f)
 
@@ -106,7 +106,7 @@ def main() -> None:
 
     # --- Load probe ---
     t_load = time.perf_counter()
-    probe = DINOv3LinearClassificationHead.from_pretrained(probe_repo)
+    probe = DINOv3LinearClassificationHead.from_pretrained(probe_repo_id)
     probe.eval()
     probe.to(device)
     assert probe.in_features == hidden_size, (
@@ -186,7 +186,7 @@ def main() -> None:
     published = probe_cfg.get("val_results", {})
 
     print(f"\n{'=' * 60}")
-    print(f"Probe:   {probe_repo}")
+    print(f"Probe:   {probe_repo_id}")
     print(f"Images:  {total}")
     print(f"Time:    {elapsed:.1f}s ({total / elapsed:.0f} img/s)")
     print(f"{'=' * 60}")
