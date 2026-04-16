@@ -9,11 +9,13 @@ import math
 from collections.abc import Iterator
 from dataclasses import dataclass
 
+from dinov3_in1k_probes.data import IMAGENET_MEAN, IMAGENET_STD
+
 log = logging.getLogger(__name__)
 
-# ImageNet normalization in [0, 255] range for DALI's uint8 pipeline.
-_MEAN_U8 = [0.485 * 255, 0.456 * 255, 0.406 * 255]
-_STD_U8 = [0.229 * 255, 0.224 * 255, 0.225 * 255]
+# DALI normalizes uint8 [0, 255] directly, so scale the [0, 1] constants.
+_MEAN_U8 = [m * 255 for m in IMAGENET_MEAN]
+_STD_U8 = [s * 255 for s in IMAGENET_STD]
 
 
 @dataclass

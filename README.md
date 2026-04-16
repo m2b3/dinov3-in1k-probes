@@ -90,8 +90,8 @@ uvx --with 'git+https://github.com/yberreby/dinov3-in1k-probes.git' ipython
 Verify published numbers on your own IN1K val set:
 
 ```bash
-uv run eval_in1k.py --imagenet-val /path/to/ILSVRC2012/val
-uv run eval_in1k.py --imagenet-val /path/to/val --variant vitb16
+uv run python eval_in1k.py --imagenet-val /path/to/ILSVRC2012/val
+uv run python eval_in1k.py --imagenet-val /path/to/val --variant vitb16
 ```
 
 Image size and backbone are read from the probe's HuggingFace config — no manual configuration needed.

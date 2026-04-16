@@ -14,10 +14,11 @@ import json
 import timm
 import torch
 from huggingface_hub import hf_hub_download
-from transformers import AutoImageProcessor, AutoModel
+from transformers import AutoModel
 from transformers.image_utils import load_image
 
 from dinov3_in1k_probes import DINOv3LinearClassificationHead, probe_repo
+from dinov3_in1k_probes.data import make_val_transform
 from dinov3_in1k_probes.repos import dinov3_repo_from_model_name
 
 print("done")
@@ -35,13 +36,13 @@ meta = probe_cfg["config_metadata"]
 image_size = meta["image_size"]
 dinov3_repo = dinov3_repo_from_model_name(meta["model_name"])
 
+transform = make_val_transform(image_size)
+
 print(f"Loading linear probe: {probe_repo_id}...", end=" ", flush=True)
 probe = DINOv3LinearClassificationHead.from_pretrained(probe_repo_id)
 print("done")
 
 print(f"Loading DINOv3 model: {dinov3_repo}...", end=" ", flush=True)
-# Override processor size to match probe training resolution (default is 224px!)
-processor = AutoImageProcessor.from_pretrained(dinov3_repo, size={"height": image_size, "width": image_size})
 model = AutoModel.from_pretrained(dinov3_repo)
 print("done")
 print(f"  Patch size: {model.config.patch_size}")
@@ -50,19 +51,19 @@ print(f"  Image size: {image_size}x{image_size} (from probe config)")
 
 print(f"Processing image: {IMAGE_URL}...", end=" ", flush=True)
 image = load_image(IMAGE_URL)
-inputs = processor(images=image, return_tensors="pt")
+pixel_values = transform(image).unsqueeze(0)
 print("done")
 print(f"  Original: {image.width}x{image.height}")
-print(f"  Preprocessed: {tuple(inputs.pixel_values.shape)}")
+print(f"  Preprocessed: {tuple(pixel_values.shape)}")
 
 print("Running inference...", end=" ", flush=True)
 with torch.inference_mode():
-    cls = model(**inputs).last_hidden_state[:, 0, :]
-    logits = probe(cls.cpu())
+    cls = model(pixel_values).last_hidden_state[:, 0, :]
+    logits = probe(cls)
     probs = torch.softmax(logits, dim=-1)
 print("done")
 
-ini = timm.data.ImageNetInfo()
+ini = timm.data.ImageNetInfo()  # pyright: ignore[reportAttributeAccessIssue]
 topk_idx = logits.topk(TOP_K).indices[0]
 topk_probs = probs[0, topk_idx]
 

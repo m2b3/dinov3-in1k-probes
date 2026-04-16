@@ -1,13 +1,4 @@
-# /// script
-# requires-python = ">=3.11"
-# dependencies = [
-#     "dinov3-in1k-probes @ git+https://github.com/yberreby/dinov3-in1k-probes.git",
-#     "transformers>=4.50",
-#     "torchvision>=0.20",
-#     "tqdm",
-# ]
-# ///
-"""Standalone IN1K evaluation for DINOv3 linear probes.
+"""IN1K evaluation for DINOv3 linear probes.
 
 Loads DINOv3 backbone + linear probe from HuggingFace Hub,
 runs IN1K validation with correct preprocessing,
@@ -30,29 +21,16 @@ from pathlib import Path
 
 import torch
 from huggingface_hub import hf_hub_download
-from torchvision import datasets, transforms
+from torchvision import datasets
 from tqdm import tqdm
 from transformers import AutoModel
 
 from dinov3_in1k_probes import DINOv3LinearClassificationHead, VARIANTS, probe_repo
-from dinov3_in1k_probes.data import NUM_CLASSES, load_real_labels, real_accuracy
+from dinov3_in1k_probes.data import NUM_CLASSES, load_real_labels, make_val_transform, real_accuracy
 from dinov3_in1k_probes.repos import dinov3_repo_from_model_name
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger(__name__)
-
-IMAGENET_MEAN = (0.485, 0.456, 0.406)
-IMAGENET_STD = (0.229, 0.224, 0.225)
-
-
-def make_val_transform(image_size: int) -> transforms.Compose:
-    """Match the DALI val pipeline: resize shortest side → center crop → normalize."""
-    return transforms.Compose([
-        transforms.Resize(image_size, interpolation=transforms.InterpolationMode.BICUBIC),
-        transforms.CenterCrop(image_size),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
-    ])
 
 
 def main() -> None:
