@@ -1,32 +1,69 @@
+"""Fetch and display metrics + hyperparameters for all published DINOv3 IN1K probes."""
+
 import json
 
 from huggingface_hub import hf_hub_download
 from tabulate import tabulate
 
-# ============================================================================
-# CONFIG
-# ============================================================================
-VARIANTS = ["vits16", "vits16plus", "vitb16", "vitl16", "vith16plus"]
-IMAGE_SIZES = [512]
+from dinov3_in1k_probes import VARIANTS, probe_repo
 
-# ============================================================================
-# FETCH AND PRINT METRICS
-# ============================================================================
-rows = []
+configs = {}
 for variant in VARIANTS:
-    for image_size in IMAGE_SIZES:
-        repo = f"yberreby/dinov3-{variant}-lvd1689m-in1k-{image_size}x{image_size}-linear-clf-probe"
-        cfg_path = hf_hub_download(repo, "config.json")
-        with open(cfg_path) as f:
-            cfg = json.load(f)
-        vr = cfg["val_results"]
-        rows.append(
-            [
-                repo,
-                f"{vr['top1'] * 100:.2f}%",
-                f"{vr['real_top1'] * 100:.2f}%",
-            ]
-        )
+    repo = probe_repo(variant)
+    cfg_path = hf_hub_download(repo, "config.json")
+    with open(cfg_path) as f:
+        configs[variant] = json.load(f)
 
-headers = ["HF Hub Repo", "IN1k val top-1", "IN-ReAL top-1"]
-print(tabulate(rows, headers=headers, tablefmt="github"))
+# --- Accuracy table ---
+acc_rows = []
+for variant, cfg in configs.items():
+    vr = cfg["val_results"]
+    acc_rows.append([
+        variant,
+        cfg["in_features"],
+        f"{vr['top1'] * 100:.2f}%",
+        f"{vr['top5'] * 100:.2f}%",
+        f"{vr['real_top1'] * 100:.2f}%",
+    ])
+
+print("=== Accuracy ===\n")
+print(tabulate(acc_rows, headers=["Variant", "dim", "top-1", "top-5", "ReAL top-1"], tablefmt="github"))
+
+# --- Hyperparameters table ---
+hp_rows = []
+for variant, cfg in configs.items():
+    tp = cfg["trial_params"]
+    hp_rows.append([
+        variant,
+        tp["optimizer"],
+        f"{tp['peak_lr']:.2e}",
+        f"{tp['weight_decay']:.2e}",
+        tp["batch_size"],
+        tp["total_steps"],
+        tp["warmup_steps"],
+        f"{tp['beta1']:.3f}",
+        f"{tp['beta2']:.4f}",
+        tp["use_dinov3_init"],
+        tp["n_train_epochs"],
+        cfg["config_metadata"]["outer_epochs"],
+    ])
+
+print("\n\n=== Hyperparameters (Optuna best trial) ===\n")
+objectives = {v: cfg["config_metadata"].get("objective", "sigmoid") for v, cfg in configs.items()}
+unique_objectives = set(objectives.values())
+if len(unique_objectives) == 1:
+    print(f"Loss: {unique_objectives.pop()} for all probes.\n")
+else:
+    for v, obj in objectives.items():
+        print(f"  {v}: {obj}")
+    print()
+print(tabulate(hp_rows, headers=[
+    "Variant", "optim", "peak_lr", "wd", "bs", "steps", "warmup",
+    "β1", "β2", "dv3_init", "epochs", "outer_ep",
+], tablefmt="github", disable_numparse=True))
+
+# --- Metadata ---
+print("\n\n=== Metadata ===\n")
+for variant, cfg in configs.items():
+    print(f"  {variant}: trained {cfg['timestamp']}, dim={cfg['in_features']}, "
+          f"image_size={cfg['config_metadata']['image_size']}")

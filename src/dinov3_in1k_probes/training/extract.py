@@ -24,7 +24,8 @@ import torch
 from torch import Tensor
 from tqdm import tqdm
 
-from dinov3_in1k_probes.training.backbone import extract_cls, load_dinov3, model_name_from_repo
+from dinov3_in1k_probes.repos import model_name_from_repo
+from dinov3_in1k_probes.training.backbone import extract_cls, load_dinov3
 from dinov3_in1k_probes.training.config import ExtractionConfig
 from dinov3_in1k_probes.training.dali_loader import create_loader
 
@@ -75,7 +76,7 @@ def run_extraction(cfg: ExtractionConfig) -> None:
     is_val = cfg.split == "val"
 
     model = load_dinov3(cfg.model_repo, device=device)
-    embed_dim: int = model.config.hidden_size  # type: ignore[assignment]
+    embed_dim = int(model.config.hidden_size)
     log.info("  embed_dim=%d", embed_dim)
 
     data_root = str(cfg.imagenet_root / cfg.split)

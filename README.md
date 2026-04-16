@@ -51,7 +51,7 @@ See [the corresponding HuggingFace Collection](https://huggingface.co/collection
 | [ViT-L/16](https://huggingface.co/yberreby/dinov3-vitl16-lvd1689m-in1k-512x512-linear-clf-probe) | 90.2% / **90.42%** | 87.44% |
 | [ViT-H+/16](https://huggingface.co/yberreby/dinov3-vith16plus-lvd1689m-in1k-512x512-linear-clf-probe) | 90.3% / **90.31%** | 87.65% |
 
-The accuracy of the latest probes uploaded on the HF Hub can be queried using `uv run print_metrics.py`.
+Accuracy and full Optuna hyperparameters can be queried using `uv run print_metrics.py`.
 
 ## Usage
 
@@ -76,12 +76,25 @@ probe = DINOv3LinearClassificationHead.from_pretrained(
 # DINOv3LinearClassificationHead(in_features=768, out_features=1000, bias=True)
 ```
 
+See [`demo.py`](demo.py) for a complete example including DINOv3 backbone loading and preprocessing.
+
 To get an interactive shell with the package:
 
 ```bash
 uvx --with 'git+https://github.com/yberreby/dinov3-in1k-probes.git' ipython
 ```
 
+
+## Evaluation
+
+Verify published numbers on your own IN1K val set:
+
+```bash
+uv run eval_in1k.py --imagenet-val /path/to/ILSVRC2012/val
+uv run eval_in1k.py --imagenet-val /path/to/val --variant vitb16
+```
+
+Image size and backbone are read from the probe's HuggingFace config — no manual configuration needed.
 
 ## Training
 
@@ -90,7 +103,7 @@ Install the training dependencies with `uv sync --group training`.
 
 ### Two-phase pipeline
 
-1. **Extract** CLS tokens from a frozen DINOv3 backbone into `.pt` files on disk (GPU, DALI).
+1. **Extract** CLS tokens from a frozen DINOv3 backbone into `.pt` files on disk (GPU, [DALI](https://github.com/NVIDIA/DALI) — Linux/CUDA only).
 2. **Train** a linear probe via Optuna HP search over the cached features (all in GPU memory, fast).
 
 This decouples the expensive backbone forward pass from the probe optimization,
@@ -103,8 +116,13 @@ making 100+ Optuna trials practical over the full ImageNet training set.
 | `IMAGENET_ROOT` | `extract` | Path to `ILSVRC2012/` (must contain `train/` and `val/` subdirs) |
 | `FEATURES_DIR` | `extract`, `train` | Where to read/write cached `.pt` feature files |
 | `CHECKPOINTS_DIR` | `train` | Where to save probe checkpoints (default: `checkpoints`) |
-| `COMET_API_KEY` | `train` | Comet ML experiment tracking |
+| `COMET_API_KEY` | `train` | **Required.** Comet ML experiment tracking |
 | `COMET_WORKSPACE` | `train` | Comet workspace name (pass via CLI `--comet-workspace` or env var) |
+
+Extracted features are written to `$FEATURES_DIR/<model_name>/<image_size>/<split>/` (e.g.
+`$FEATURES_DIR/dinov3_vitb16/512/val/`). Each extraction run writes `*_cls_tokens.pt`,
+`*_labels.pt`, and `*_filenames.pt`. Multiple train extractions (for augmentation epochs)
+are concatenated automatically by the training script.
 
 ### Running locally
 

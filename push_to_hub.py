@@ -7,6 +7,7 @@ import torch
 import tyro
 
 from dinov3_in1k_probes import DINOv3LinearClassificationHead
+from dinov3_in1k_probes.repos import HF_OWNER, probe_repo
 
 FILENAME_PATTERN = r"dinov3-(?P<slug>[^-]+)-lvd1689m-in1k-(?P<res>\d+)x\d+-linear-clf-probe\.pt"
 
@@ -16,7 +17,7 @@ class Args:
     """Push DINOv3 linear probe to HuggingFace Hub."""
 
     checkpoint: Path
-    owner: str = "yberreby"
+    owner: str = HF_OWNER
 
 
 def main() -> None:
@@ -71,7 +72,7 @@ def main() -> None:
     pprint(config)
 
     # Push to hub
-    repo_id = f"{args.owner}/dinov3-{slug}-lvd1689m-in1k-{res}x{res}-linear-clf-probe"
+    repo_id = probe_repo(slug, image_size=res, owner=args.owner)
     print(f"\nPushing to {repo_id}...")
     probe.push_to_hub(repo_id, config=config)
     print(f"✓ Successfully pushed to {repo_id}")

@@ -40,18 +40,18 @@ def create_loader(
 
     DALI pads the last batch via wraparound — callers must slice.
     """
-    import cupy as cp  # type: ignore[import-untyped]
-    import nvidia.dali.fn as fn  # type: ignore[import-untyped]
+    import cupy as cp
+    import nvidia.dali.fn as fn
     import torch
-    from nvidia.dali import pipeline_def  # type: ignore[import-untyped]
-    from nvidia.dali.pipeline import DataNode  # type: ignore[import-untyped]
-    from nvidia.dali.types import DALIDataType, DALIImageType  # type: ignore[import-untyped]
+    from nvidia.dali import pipeline_def
+    from nvidia.dali.pipeline import DataNode
+    from nvidia.dali.types import DALIDataType, DALIImageType
 
     reader_name = "TrainReader" if training else "ValReader"
 
     log.info("DALI: %s %dpx BS=%d training=%s threads=%d", data_root, image_size, batch_size, training, num_threads)
 
-    @pipeline_def()  # type: ignore[misc]
+    @pipeline_def()
     def pipe():
         jpegs, labels = fn.readers.file(
             file_root=data_root, random_shuffle=training,
@@ -74,7 +74,7 @@ def create_loader(
         )
         return (images, labels, jpegs) if return_filenames else (images, labels)
 
-    p = pipe(batch_size=batch_size, num_threads=num_threads, device_id=device_id)  # type: ignore[operator]
+    p = pipe(batch_size=batch_size, num_threads=num_threads, device_id=device_id)  # pyright: ignore[reportCallIssue] — @pipeline_def transforms the signature
     p.build()
 
     epoch_size = p.epoch_size()[reader_name]

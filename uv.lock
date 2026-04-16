@@ -283,6 +283,7 @@ dev = [
     { name = "ipython" },
     { name = "numpy" },
     { name = "pillow" },
+    { name = "pypatree" },
     { name = "pytest" },
     { name = "ruff" },
     { name = "safetensors" },
@@ -318,6 +319,7 @@ dev = [
     { name = "ipython", specifier = ">=9.7.0" },
     { name = "numpy", specifier = ">=2.3.4" },
     { name = "pillow", specifier = ">=12.0.0" },
+    { name = "pypatree", specifier = ">=0.4.0" },
     { name = "pytest", specifier = ">=9.0.0" },
     { name = "ruff", specifier = ">=0.14.0" },
     { name = "safetensors", specifier = ">=0.6.2" },
@@ -1311,6 +1313,19 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/b0/77/a5b8c569bf593b0140bde72ea885a803b82086995367bf2037de0159d924/pygments-2.19.2.tar.gz", hash = "sha256:636cb2477cec7f8952536970bc533bc43743542f70392ae026374600add5b887", size = 4968631, upload-time = "2025-06-21T13:39:12.283Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c7/21/705964c7812476f378728bdf590ca4b771ec72385c533964653c68e86bdc/pygments-2.19.2-py3-none-any.whl", hash = "sha256:86540386c03d588bb81d44bc3928634ff26449851e99741617ecb9037ee5ec0b", size = 1225217, upload-time = "2025-06-21T13:39:07.939Z" },
+]
+
+[[package]]
+name = "pypatree"
+version = "0.4.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "rich" },
+    { name = "tyro" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d4/ac/fb35ab6bba17b00610e278db92a3d6cec9f78b23bffb0c73380b7a1bedd9/pypatree-0.4.0.tar.gz", hash = "sha256:19586563475c1ab00a6343759409a443365964c0b947436797d4eee652a11c96", size = 73940, upload-time = "2026-02-14T17:48:47.269Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d1/4b/4057b7b43b46061f2ba96301f14ee30eaabb5aa9e5e175b0cdf3e09a0b0c/pypatree-0.4.0-py3-none-any.whl", hash = "sha256:eb558c5fd2a50dee6827d32233842bdde1362b64644de4d6b755a1b91a166360", size = 17724, upload-time = "2026-02-14T17:48:45.967Z" },
 ]
 
 [[package]]

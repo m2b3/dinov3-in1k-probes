@@ -5,6 +5,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
 
+from dinov3_in1k_probes.repos import VARIANTS, dinov3_backbone_repo
+
 
 def _env_path(var: str, fallback: str | None = None) -> Path:
     val = os.environ.get(var, fallback)
@@ -15,22 +17,20 @@ def _env_path(var: str, fallback: str | None = None) -> Path:
 
 Objective = Literal["softmax", "sigmoid"]
 
-# DINOv3 model repos on HuggingFace.
+# All DINOv3 backbones available for extraction (includes 7B, which has no probe).
 DINOV3_REPOS: dict[str, str] = {
-    "vits16": "facebook/dinov3-vits16-pretrain-lvd1689m",
-    "vits16plus": "facebook/dinov3-vits16plus-pretrain-lvd1689m",
-    "vitb16": "facebook/dinov3-vitb16-pretrain-lvd1689m",
-    "vitl16": "facebook/dinov3-vitl16-pretrain-lvd1689m",
-    "vith16plus": "facebook/dinov3-vith16plus-pretrain-lvd1689m",
-    "vit7b16": "facebook/dinov3-vit7b16-pretrain-lvd1689m",
-}
+    v: dinov3_backbone_repo(v) for v in VARIANTS
+} | {"vit7b16": "facebook/dinov3-vit7b16-pretrain-lvd1689m"}
+
+
+_DEFAULT_BACKBONE = dinov3_backbone_repo("vitb16")
 
 
 @dataclass
 class ExtractionConfig:
     """CLS token extraction from a frozen DINOv3 backbone."""
 
-    model_repo: str = "facebook/dinov3-vitb16-pretrain-lvd1689m"
+    model_repo: str = _DEFAULT_BACKBONE
     image_size: int = 512
     split: Literal["train", "val"] = "val"
 
@@ -48,7 +48,7 @@ class ExtractionConfig:
 class TrainConfig:
     """Optuna-based linear probe training on pre-extracted CLS tokens."""
 
-    model_repo: str = "facebook/dinov3-vitb16-pretrain-lvd1689m"
+    model_repo: str = _DEFAULT_BACKBONE
     image_size: int = 512
 
     max_batch_size: int = 2048
