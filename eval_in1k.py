@@ -2,12 +2,13 @@
 # requires-python = ">=3.11"
 # dependencies = [
 #     "dinov3-in1k-probes @ git+https://github.com/yberreby/dinov3-in1k-probes.git",
-#     "transformers>=4.50",
-#     "torchvision>=0.20",
-#     "tqdm",
+#     "torch==2.9.1",
+#     "transformers==4.57.1",
+#     "torchvision==0.24.1",
+#     "tqdm==4.67.1",
 # ]
 # ///
-"""Standalone IN1K evaluation for DINOv3 linear probes.
+"""IN1K evaluation for DINOv3 linear probes.
 
 Loads DINOv3 backbone + linear probe from HuggingFace Hub,
 runs IN1K validation with correct preprocessing,
