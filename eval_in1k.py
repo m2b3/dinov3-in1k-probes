@@ -2,10 +2,9 @@
 # requires-python = ">=3.11"
 # dependencies = [
 #     "dinov3-in1k-probes @ git+https://github.com/yberreby/dinov3-in1k-probes.git",
-#     "torch==2.9.1",
-#     "transformers==4.57.1",
-#     "torchvision==0.24.1",
-#     "tqdm==4.67.1",
+#     "transformers>=4.50",
+#     "torchvision>=0.24",
+#     "tqdm>=4.60",
 # ]
 # ///
 """IN1K evaluation for DINOv3 linear probes.
