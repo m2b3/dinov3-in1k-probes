@@ -103,7 +103,7 @@ Install the training dependencies with `uv sync --group training`.
 
 ### Two-phase pipeline
 
-1. **Extract** CLS tokens from a frozen DINOv3 backbone into `.pt` files on disk (GPU, DALI).
+1. **Extract** CLS tokens from a frozen DINOv3 backbone into `.pt` files on disk (GPU, [DALI](https://github.com/NVIDIA/DALI) — Linux/CUDA only).
 2. **Train** a linear probe via Optuna HP search over the cached features (all in GPU memory, fast).
 
 This decouples the expensive backbone forward pass from the probe optimization,
