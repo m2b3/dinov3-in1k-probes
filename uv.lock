@@ -274,6 +274,7 @@ dependencies = [
     { name = "numpy" },
     { name = "safetensors" },
     { name = "torch" },
+    { name = "torchvision" },
 ]
 
 [package.dev-dependencies]
@@ -310,6 +311,7 @@ requires-dist = [
     { name = "numpy", specifier = ">=2.3.4" },
     { name = "safetensors", specifier = ">=0.6.2" },
     { name = "torch", specifier = ">=2.9.1" },
+    { name = "torchvision", specifier = ">=0.24.1" },
 ]
 
 [package.metadata.requires-dev]
