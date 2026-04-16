@@ -20,6 +20,15 @@ authors = [{name = "Yohaï-Eliel Berreby", email = "me@yberreby.com"}]
 where = ["src"]
 
 [dependency-groups]
+training = [
+    "transformers>=4.50.0",
+    "tyro>=0.9.0",
+    "tqdm>=4.60.0",
+    "optuna>=4.0.0",
+    "comet-ml>=3.30.0",
+    "nvidia-dali-cuda120; sys_platform == 'linux' and platform_machine == 'x86_64'",
+    "cupy-cuda12x; sys_platform == 'linux'",
+]
 dev = [
     "accelerate>=1.11.0",
     "ipython>=9.7.0",
@@ -32,4 +41,22 @@ dev = [
     "transformers>=4.57.1",
     "tyro>=0.9.35",
     "yaspin>=3.3.0",
+    "basedpyright>=1.37.0",
+    "pytest>=9.0.0",
+    "ruff>=0.14.0",
 ]
+
+[tool.basedpyright]
+typeCheckingMode = "standard"
+reportPrivateImportUsage = false
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+
+[[tool.uv.index]]
+name = "nvidia"
+url = "https://pypi.nvidia.com"
+explicit = true
+
+[tool.uv.sources]
+nvidia-dali-cuda120 = [{ index = "nvidia" }]
