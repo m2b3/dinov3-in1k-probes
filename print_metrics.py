@@ -24,11 +24,10 @@ for variant, cfg in configs.items():
         f"{vr['top1'] * 100:.2f}%",
         f"{vr['top5'] * 100:.2f}%",
         f"{vr['real_top1'] * 100:.2f}%",
-        f"{vr['loss']:.4f}",
     ])
 
 print("=== Accuracy ===\n")
-print(tabulate(acc_rows, headers=["Variant", "dim", "top-1", "top-5", "ReAL top-1", "loss"], tablefmt="github"))
+print(tabulate(acc_rows, headers=["Variant", "dim", "top-1", "top-5", "ReAL top-1"], tablefmt="github"))
 
 # --- Hyperparameters table ---
 hp_rows = []
@@ -41,6 +40,7 @@ for variant, cfg in configs.items():
         f"{tp['weight_decay']:.2e}",
         tp["batch_size"],
         tp["total_steps"],
+        tp["warmup_steps"],
         f"{tp['beta1']:.3f}",
         f"{tp['beta2']:.4f}",
         tp["use_dinov3_init"],
@@ -49,12 +49,14 @@ for variant, cfg in configs.items():
     ])
 
 print("\n\n=== Hyperparameters (Optuna best trial) ===\n")
+print("Loss: sigmoid (binary CE per class, Beyer et al. 2020) — not stored in checkpoint,")
+print("but all published probes used the same TrainConfig default.\n")
 print(tabulate(hp_rows, headers=[
-    "Variant", "optim", "peak_lr", "wd", "bs", "steps",
+    "Variant", "optim", "peak_lr", "wd", "bs", "steps", "warmup",
     "β1", "β2", "dv3_init", "epochs", "outer_ep",
 ], tablefmt="github", disable_numparse=True))
 
-# --- Timestamps ---
+# --- Metadata ---
 print("\n\n=== Metadata ===\n")
 for variant, cfg in configs.items():
     print(f"  {variant}: trained {cfg['timestamp']}, dim={cfg['in_features']}, "
