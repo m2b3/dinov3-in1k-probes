@@ -44,11 +44,15 @@ dev = [
     "basedpyright>=1.37.0",
     "pytest>=9.0.0",
     "ruff>=0.14.0",
+    "pypatree>=0.4.0",
 ]
 
 [tool.basedpyright]
 typeCheckingMode = "standard"
 reportPrivateImportUsage = false
+reportMissingTypeStubs = false
+reportMissingImports = "warning"
+reportAttributeAccessIssue = "warning"
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
