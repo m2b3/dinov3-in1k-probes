@@ -5,6 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "dinov3-in1k-probes"
 version = "0.1.0"
+description = "DINOv3 ImageNet-1k linear classification probes: training, inference, HF repos."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [

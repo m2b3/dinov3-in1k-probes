@@ -1,3 +1,5 @@
+"""DINOv3 ImageNet-1k linear classification probes: training, inference, HF repos."""
+
 from dinov3_in1k_probes.dinov3_linear_clf_head import DINOv3LinearClassificationHead
 from dinov3_in1k_probes.repos import (
     VARIANTS,
