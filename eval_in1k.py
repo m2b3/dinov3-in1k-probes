@@ -1,7 +1,7 @@
-"""IN1K evaluation for DINOv3 linear probes.
+"""IN1k evaluation for DINOv3 linear probes.
 
 Loads DINOv3 backbone + linear probe from HuggingFace Hub,
-runs IN1K validation with correct preprocessing,
+runs IN1k validation with correct preprocessing,
 reports standard top-1, top-5, and ImageNet-ReAL top-1.
 
 Image size and backbone are derived from the probe's HF config metadata.
@@ -34,9 +34,9 @@ log = logging.getLogger(__name__)
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Evaluate DINOv3 IN1K linear probes")
+    parser = argparse.ArgumentParser(description="Evaluate DINOv3 IN1k linear probes")
     parser.add_argument("--imagenet-val", type=Path, required=True,
-                        help="Path to IN1K val/ directory (class subdirectories)")
+                        help="Path to IN1k val/ directory (class subdirectories)")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--variant", default="vits16plus", choices=VARIANTS,
                        help="Shorthand for published probes (default: vits16plus)")
@@ -168,12 +168,12 @@ def main() -> None:
     print(f"Images:  {total}")
     print(f"Time:    {elapsed:.1f}s ({total / elapsed:.0f} img/s)")
     print(f"{'=' * 60}")
-    print(f"IN1K val top-1:  {top1 * 100:.2f}%", end="")
+    print(f"IN1k val top-1:  {top1 * 100:.2f}%", end="")
     if "top1" in published:
         print(f"  (published: {published['top1'] * 100:.2f}%)")
     else:
         print()
-    print(f"IN1K val top-5:  {top5 * 100:.2f}%", end="")
+    print(f"IN1k val top-5:  {top5 * 100:.2f}%", end="")
     if "top5" in published:
         print(f"  (published: {published['top5'] * 100:.2f}%)")
     else:

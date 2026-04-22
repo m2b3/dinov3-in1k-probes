@@ -1,4 +1,4 @@
-"""Fetch and display metrics + hyperparameters for all published DINOv3 IN1K probes."""
+"""Fetch and display metrics + hyperparameters for all published DINOv3 IN1k probes."""
 
 import json
 

@@ -1,4 +1,4 @@
-"""NVIDIA DALI GPU data loader for ImageNet-1K.
+"""NVIDIA DALI GPU data loader for ImageNet-1k.
 
 Linux + CUDA only. Imports are deferred so the module can be imported
 (but not called) on macOS for type-checking.

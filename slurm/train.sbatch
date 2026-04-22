@@ -14,7 +14,7 @@
 set -eu
 mkdir -p logs
 
-echo "=== IN1K Classification Probe Training (Optuna) ==="
+echo "=== IN1k Classification Probe Training (Optuna) ==="
 echo "Job: $SLURM_JOB_ID on $(hostname)"
 
 exec uv run --group training python -m dinov3_in1k_probes.training train "$@"

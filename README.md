@@ -87,7 +87,7 @@ uvx --with 'git+https://github.com/yberreby/dinov3-in1k-probes.git' ipython
 
 ## Evaluation
 
-Verify published numbers on your own IN1K val set:
+Verify published numbers on your own IN1k val set:
 
 ```bash
 uv run python eval_in1k.py --imagenet-val /path/to/ILSVRC2012/val

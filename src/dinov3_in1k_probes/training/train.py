@@ -340,7 +340,7 @@ def run_training(cfg: TrainConfig) -> None:
     device = torch.device("cuda")
 
     log.info("=" * 60)
-    log.info("DINOv3 IN1K Linear Probe — Optuna HP Search")
+    log.info("DINOv3 IN1k Linear Probe — Optuna HP Search")
     log.info("  model: %s @ %dpx", cfg.model_repo, cfg.image_size)
     log.info("  max_batch_size=%d  outer_epochs=%d  trials=%d  objective=%s",
              cfg.max_batch_size, cfg.outer_epochs, cfg.n_trials, cfg.objective)

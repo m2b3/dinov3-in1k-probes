@@ -1,4 +1,4 @@
-"""Configuration for DINOv3 IN1K CLS probe extraction and training."""
+"""Configuration for DINOv3 IN1k CLS probe extraction and training."""
 
 import os
 from dataclasses import dataclass, field

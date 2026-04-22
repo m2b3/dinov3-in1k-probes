@@ -1,4 +1,4 @@
-"""DINOv3 CLS token extraction from ImageNet-1K.
+"""DINOv3 CLS token extraction from ImageNet-1k.
 
 Phase 1 of the two-phase pipeline: run the frozen DINOv3 backbone over
 ImageNet train/val splits and cache CLS tokens to disk as .pt files.

@@ -1,4 +1,4 @@
-"""ImageNet-1K constants, class labels, preprocessing, and ImageNet-ReAL evaluation."""
+"""ImageNet-1k constants, class labels, preprocessing, and ImageNet-ReAL evaluation."""
 
 import json
 import re
@@ -45,7 +45,7 @@ def load_real_labels() -> list[list[int]]:
 def extract_val_num(filename: str) -> int:
     """'n01440764/ILSVRC2012_val_00000293.JPEG' → 293."""
     m = _VAL_NUM_RE.search(filename)
-    assert m, f"Not an IN1K val filename: {filename}"
+    assert m, f"Not an IN1k val filename: {filename}"
     return int(m.group(1))
 
 

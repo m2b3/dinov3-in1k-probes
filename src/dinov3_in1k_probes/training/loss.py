@@ -1,4 +1,4 @@
-"""Loss functions for IN1K classification probe training."""
+"""Loss functions for IN1k classification probe training."""
 
 from typing import Callable, Literal
 

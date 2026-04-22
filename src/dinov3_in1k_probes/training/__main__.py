@@ -1,4 +1,4 @@
-"""DINOv3 IN1K linear probe: extraction and training.
+"""DINOv3 IN1k linear probe: extraction and training.
 
 Usage:
     uv run python -m dinov3_in1k_probes.training extract ...
