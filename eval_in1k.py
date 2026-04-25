@@ -55,7 +55,8 @@ def main() -> None:
     probe_repo_id = args.probe or probe_repo(args.variant)
     log.info("Probe repo: %s", probe_repo_id)
 
-    cfg_path = hf_hub_download(probe_repo_id, "config.json")
+    probe_path = Path(probe_repo_id)
+    cfg_path = probe_path / "config.json" if probe_path.is_dir() else hf_hub_download(probe_repo_id, "config.json")
     with open(cfg_path) as f:
         probe_cfg = json.load(f)
 
