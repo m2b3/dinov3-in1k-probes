@@ -10,6 +10,7 @@
 
 print("Importing dependencies...", end=" ", flush=True)
 import json
+from pathlib import Path
 
 import timm
 import torch
@@ -29,7 +30,8 @@ TOP_K = 5
 
 # Derive everything from the probe's config metadata.
 probe_repo_id = probe_repo(VARIANT)
-cfg_path = hf_hub_download(probe_repo_id, "config.json")
+probe_path = Path(probe_repo_id)
+cfg_path = probe_path / "config.json" if probe_path.is_dir() else hf_hub_download(probe_repo_id, "config.json")
 with open(cfg_path) as f:
     probe_cfg = json.load(f)
 meta = probe_cfg["config_metadata"]
