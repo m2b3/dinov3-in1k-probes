@@ -39,7 +39,7 @@ Here, we report both.
   - Base: [`facebook/dinov3-vith16plus-pretrain-lvd1689m`](https://huggingface.co/facebook/dinov3-vith16plus-pretrain-lvd1689m)
   - Probe: [`canvit/dinov3-vith16plus-lvd1689m-in1k-512x512-linear-clf-probe`](https://huggingface.co/canvit/dinov3-vith16plus-lvd1689m-in1k-512x512-linear-clf-probe)
 
-See [the corresponding HuggingFace Collection](https://huggingface.co/collections/yberreby/dinov3-imagenet-1k-probes).
+See [the corresponding HuggingFace Collection](https://huggingface.co/collections/canvit/dinov3-imagenet-1k-probes-pytorch-69ec77ba50ddf36e3cba7346).
 
 ## Performance
 
