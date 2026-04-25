@@ -2,7 +2,7 @@
 
 VARIANTS = ("vits16", "vits16plus", "vitb16", "vitl16", "vith16plus")
 
-HF_OWNER = "yberreby"
+HF_OWNER = "canvit"
 
 
 def dinov3_backbone_repo(variant: str) -> str:
@@ -12,7 +12,7 @@ def dinov3_backbone_repo(variant: str) -> str:
 
 
 def probe_repo(variant: str, image_size: int = 512, *, owner: str = HF_OWNER) -> str:
-    """'vits16plus' → 'yberreby/dinov3-vits16plus-lvd1689m-in1k-512x512-linear-clf-probe'."""
+    """'vits16plus' → 'canvit/dinov3-vits16plus-lvd1689m-in1k-512x512-linear-clf-probe'."""
     assert variant in VARIANTS, f"Unknown variant {variant!r}, expected one of {VARIANTS}"
     return f"{owner}/dinov3-{variant}-lvd1689m-in1k-{image_size}x{image_size}-linear-clf-probe"
 
