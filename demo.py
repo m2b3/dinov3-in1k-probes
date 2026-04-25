@@ -1,7 +1,7 @@
 # /// script
 # requires-python = ">=3.11"
 # dependencies = [
-#     "dinov3-in1k-probes @ git+https://github.com/yberreby/dinov3-in1k-probes.git",
+#     "dinov3-in1k-probes @ git+https://github.com/m2b3/dinov3-in1k-probes.git",
 #     "timm>=1.0",
 #     "transformers>=4.50",
 # ]
