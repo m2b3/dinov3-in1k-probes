@@ -1,8 +1,16 @@
-"""HuggingFace repo ID construction for DINOv3 backbones and probes."""
+"""HuggingFace repo ID construction for DINOv3 backbones and probes.
+
+The probes' canvit-org prefix is anchored on ``$CANVIT_REPO_ROOT`` (default
+``"canvit"``), the same env var read by ``canvit_pytorch.checkpoints``.
+Override redirects every probe load — value can be either an HF org prefix
+or a local directory path.
+"""
+
+import os
 
 VARIANTS = ("vits16", "vits16plus", "vitb16", "vitl16", "vith16plus")
 
-HF_OWNER = "canvit"
+CANVIT_REPO_ROOT = os.environ.get("CANVIT_REPO_ROOT", "canvit").rstrip("/")
 
 
 def dinov3_backbone_repo(variant: str) -> str:
@@ -11,10 +19,10 @@ def dinov3_backbone_repo(variant: str) -> str:
     return f"facebook/dinov3-{variant}-pretrain-lvd1689m"
 
 
-def probe_repo(variant: str, image_size: int = 512, *, owner: str = HF_OWNER) -> str:
-    """'vits16plus' → 'canvit/dinov3-vits16plus-lvd1689m-in1k-512x512-linear-clf-probe'."""
+def probe_repo(variant: str, image_size: int = 512) -> str:
+    """'vits16plus' → '<canvit-root>/dinov3-vits16plus-lvd1689m-in1k-512x512-linear-clf-probe'."""
     assert variant in VARIANTS, f"Unknown variant {variant!r}, expected one of {VARIANTS}"
-    return f"{owner}/dinov3-{variant}-lvd1689m-in1k-{image_size}x{image_size}-linear-clf-probe"
+    return f"{CANVIT_REPO_ROOT}/dinov3-{variant}-lvd1689m-in1k-{image_size}x{image_size}-linear-clf-probe"
 
 
 def dinov3_repo_from_model_name(model_name: str) -> str:
