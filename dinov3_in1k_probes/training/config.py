@@ -8,11 +8,8 @@ from typing import Literal
 from dinov3_in1k_probes.repos import VARIANTS, dinov3_backbone_repo
 
 
-def _env_path(var: str, fallback: str | None = None) -> Path:
-    val = os.environ.get(var, fallback)
-    if val is None:
-        raise ValueError(f"${var} not set")
-    return Path(val)
+def _env_path(var: str, fallback: str) -> Path:
+    return Path(os.environ.get(var, fallback))
 
 
 Objective = Literal["softmax", "sigmoid"]
@@ -40,8 +37,8 @@ class ExtractionConfig:
     dry_run: bool = False
     accumulation_device: str = "cuda"
 
-    imagenet_root: Path = field(default_factory=lambda: _env_path("IMAGENET_ROOT"))
-    features_dir: Path = field(default_factory=lambda: _env_path("FEATURES_DIR"))
+    imagenet_root: Path = field(default_factory=lambda: _env_path("IMAGENET_ROOT", "/datasets/ILSVRC/Data/CLS-LOC"))
+    features_dir: Path = field(default_factory=lambda: _env_path("FEATURES_DIR", "features"))
 
 
 @dataclass
@@ -56,7 +53,7 @@ class TrainConfig:
     objective: Objective = "sigmoid"
     n_trials: int = 100
 
-    features_dir: Path = field(default_factory=lambda: _env_path("FEATURES_DIR"))
+    features_dir: Path = field(default_factory=lambda: _env_path("FEATURES_DIR", "features"))
     checkpoint_dir: Path = field(default_factory=lambda: _env_path("CHECKPOINTS_DIR", "checkpoints"))
 
     comet_project: str = "dv3-in1k-linear-probing"
