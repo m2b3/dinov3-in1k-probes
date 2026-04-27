@@ -116,8 +116,8 @@ making 100+ Optuna trials practical over the full ImageNet training set.
 | `IMAGENET_ROOT` | `extract` | Path to `ILSVRC2012/` (must contain `train/` and `val/` subdirs) |
 | `FEATURES_DIR` | `extract`, `train` | Where to read/write cached `.pt` feature files |
 | `CHECKPOINTS_DIR` | `train` | Where to save probe checkpoints (default: `checkpoints`) |
-| `COMET_API_KEY` | `train` | **Required.** Comet ML experiment tracking |
-| `COMET_WORKSPACE` | `train` | Comet workspace name (pass via CLI `--comet-workspace` or env var) |
+| `COMET_API_KEY` | `train` | Comet ML API key for live experiment tracking. If unset, training writes Comet offline logs under `$CHECKPOINTS_DIR/comet_offline/`. |
+| `COMET_WORKSPACE` | `train` | Comet workspace name for live logging (pass via CLI `--comet-workspace` or env var) |
 
 Extracted features are written to `$FEATURES_DIR/<model_name>/<image_size>/<split>/` (e.g.
 `$FEATURES_DIR/dinov3_vitb16/512/val/`). Each extraction run writes `*_cls_tokens.pt`,

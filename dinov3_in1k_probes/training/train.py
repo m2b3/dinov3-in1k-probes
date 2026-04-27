@@ -6,6 +6,7 @@ then run Optuna HP search over {optimizer, LR, batch_size, WD, betas}.
 
 import logging
 import math
+import os
 from datetime import datetime
 from functools import partial
 from pathlib import Path
@@ -164,6 +165,20 @@ def _save_checkpoint(
     return path
 
 
+def _new_experiment(cfg: TrainConfig) -> comet_ml.Experiment | comet_ml.OfflineExperiment:
+    workspace = cfg.comet_workspace or None
+    if os.environ.get("COMET_API_KEY"):
+        return comet_ml.Experiment(project_name=cfg.comet_project, workspace=workspace)
+
+    offline_dir = cfg.checkpoint_dir / "comet_offline"
+    log.warning("COMET_API_KEY is not set; writing Comet offline logs to %s", offline_dir)
+    return comet_ml.OfflineExperiment(
+        project_name=cfg.comet_project,
+        workspace=workspace,
+        offline_directory=str(offline_dir),
+    )
+
+
 # --- Optimizer + scheduler ---
 
 
@@ -242,7 +257,7 @@ def _run_trial(
 
     scheduler = _make_scheduler(optimizer, total_steps=total_steps, warmup_steps=warmup_steps)
 
-    experiment = comet_ml.Experiment(project_name=cfg.comet_project, workspace=cfg.comet_workspace)
+    experiment = _new_experiment(cfg)
     trial_params: dict = {
         "objective": cfg.objective, "ref_lr": ref_lr,
         "peak_lr": peak_lr, "batch_size": batch_size, "batch_size_exp": bs_exp,
