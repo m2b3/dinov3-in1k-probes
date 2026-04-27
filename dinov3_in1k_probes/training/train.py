@@ -171,6 +171,7 @@ def _new_experiment(cfg: TrainConfig) -> comet_ml.Experiment | comet_ml.OfflineE
         return comet_ml.Experiment(project_name=cfg.comet_project, workspace=workspace)
 
     offline_dir = cfg.checkpoint_dir / "comet_offline"
+    offline_dir.mkdir(parents=True, exist_ok=True)
     log.warning("COMET_API_KEY is not set; writing Comet offline logs to %s", offline_dir)
     return comet_ml.OfflineExperiment(
         project_name=cfg.comet_project,
