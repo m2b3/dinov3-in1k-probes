@@ -19,7 +19,11 @@ license = "MIT"
 authors = [{name = "Yohaï-Eliel Berreby", email = "me@yberreby.com"}]
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["."]
+include = ["dinov3_in1k_probes*"]
+
+[tool.setuptools.package-data]
+dinov3_in1k_probes = ["data/in1k/*.json"]
 
 [dependency-groups]
 training = [
@@ -57,7 +61,7 @@ reportMissingImports = "warning"
 reportAttributeAccessIssue = "warning"
 
 [tool.pytest.ini_options]
-pythonpath = ["src"]
+pythonpath = ["."]
 
 [[tool.uv.index]]
 name = "nvidia"

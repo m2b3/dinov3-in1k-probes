@@ -8,8 +8,8 @@
 #SBATCH --error=logs/cls-probe-%j.err
 #
 # Pass --account on the command line:
-#   sbatch --account=YOUR_ALLOCATION slurm/train.sbatch
-#   sbatch --account=YOUR_ALLOCATION slurm/train.sbatch --n-trials 200
+#   sbatch --account=my_project_name slurm/train.sbatch
+#   sbatch --account=my_project_name slurm/train.sbatch --n-trials 200
 
 set -eu
 mkdir -p logs

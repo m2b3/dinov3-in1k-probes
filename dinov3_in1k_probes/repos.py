@@ -1,6 +1,6 @@
 """HuggingFace repo ID construction for DINOv3 backbones and probes.
 
-The probes' canvit-org prefix is anchored on ``$CANVIT_REPO_ROOT`` (default
+The probes' CanViT checkpoint root is anchored on ``$CANVIT_REPO_ROOT`` (default
 ``"canvit"``), the same env var read by ``canvit_pytorch.checkpoints``.
 Override redirects every probe load — value can be either an HF org prefix
 or a local directory path.

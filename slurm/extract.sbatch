@@ -8,8 +8,8 @@
 #SBATCH --error=logs/extract-%j.err
 #
 # Pass --account on the command line:
-#   sbatch --account=YOUR_ALLOCATION slurm/extract.sbatch
-#   sbatch --account=YOUR_ALLOCATION --array=1-2 slurm/extract.sbatch --split train
+#   sbatch --account=my_project_name slurm/extract.sbatch
+#   sbatch --account=my_project_name --array=1-2 slurm/extract.sbatch --split train
 
 set -eu
 mkdir -p logs

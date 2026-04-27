@@ -98,7 +98,7 @@ Image size and backbone are read from the probe's HuggingFace config — no manu
 
 ## Training
 
-The training code is included in this repo under `src/dinov3_in1k_probes/training/`.
+The training code is included in this repo under `dinov3_in1k_probes/training/`.
 Install the training dependencies with `uv sync --group training`.
 
 ### Two-phase pipeline
@@ -138,9 +138,9 @@ uv run --group training python -m dinov3_in1k_probes.training train
 ### Running on SLURM
 
 ```bash
-sbatch --account=YOUR_ALLOCATION slurm/extract.sbatch                        # val
-sbatch --account=YOUR_ALLOCATION --array=1-2 slurm/extract.sbatch --split train  # 2 train epochs
-sbatch --account=YOUR_ALLOCATION slurm/train.sbatch
+sbatch --account=my_project_name slurm/extract.sbatch                        # val
+sbatch --account=my_project_name --array=1-2 slurm/extract.sbatch --split train  # 2 train epochs
+sbatch --account=my_project_name slurm/train.sbatch
 ```
 
 Use `--help` on either subcommand for all options (model repo, image size, batch size, etc.).
