@@ -322,7 +322,7 @@ def _run_trial(
                 "val_top5": val_results.top5, "val_real_top1": val_results.real_top1,
             }, epoch=epoch)
 
-            if val_results.loss > init_clf.loss:
+            if cfg.n_trials > 1 and val_results.loss > init_clf.loss:
                 pbar.write(f"Trial {trial.number} pruned: val_loss={val_results.loss:.4f} > init={init_clf.loss:.4f}")
                 pbar.close()
                 experiment.end()
