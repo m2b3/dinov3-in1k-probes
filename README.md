@@ -152,3 +152,21 @@ Push probes to HuggingFace Hub:
 ```bash
 uv run push_to_hub.py --checkpoint dinov3-vitb16-lvd1689m-in1k-512x512-linear-clf-probe.pt --owner YOUR_HF_USERNAME
 ```
+
+## Citation
+
+```bibtex
+@article{berreby2026canvit,
+  title={CanViT: Toward Active-Vision Foundation Models},
+  author={Berreby, Yoha{\"i}-Eliel and Du, Sabrina and Durand, Audrey and Krishna, B. Suresh},
+  year={2026},
+  eprint={2603.22570},
+  archivePrefix={arXiv},
+  primaryClass={cs.CV},
+  url={https://arxiv.org/abs/2603.22570}
+}
+```
+
+## License
+
+MIT. See [LICENSE](LICENSE) for details.
